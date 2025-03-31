@@ -1,0 +1,27 @@
+<!-- Main container for the app -->
+<div class="app-container">
+  
+  <!-- Header section -->
+  <header class="app-header">
+    <div class="logo">
+      <h1>Student Enrollment</h1>
+    </div>
+    <nav class="navigation">
+      <ul>
+        <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
+        <li><a routerLink="/register" routerLinkActive="active">Register</a></li>
+        <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <!-- Main content area where routed components will be displayed -->
+  <main class="app-main">
+    <router-outlet></router-outlet>
+  </main>
+  
+  <!-- Footer section -->
+  <footer class="app-footer">
+    <p>&copy; 2025 Student Enrollment App | All rights reserved</p>
+  </footer>
+</div>
