@@ -17,10 +17,14 @@ export class LoginComponent {
   onLogin() {
     this.authService.login(this.email, this.password).subscribe(
       (response) => {
-        this.router.navigate(['/dashboard']);
+        if (response && response.status === 'success') {
+          this.router.navigate(['/dashboard']);
+        } else {
+          this.errorMessage = response.message || 'Login failed';
+        }
       },
       (error) => {
-        this.errorMessage = 'Invalid email or password';
+        this.errorMessage = error.message || 'Something went wrong';
       }
     );
   }

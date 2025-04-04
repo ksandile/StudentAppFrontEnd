@@ -20,14 +20,16 @@ export class RegisterComponent {
       this.errorMessage = 'Passwords do not match';
       return;
     }
-
+  
     this.authService.register(this.name, this.email, this.password).subscribe(
-      (response) => {
-        // Handle successful registration (e.g., redirect to login)
+      (response: any) => {
+        console.log('Registration successful:', response);
+        // Navigate to login or show success message
       },
-      (error) => {
+      (error: any) => {
         this.errorMessage = 'Registration failed. Try again later.';
       }
     );
   }
+  
 }
