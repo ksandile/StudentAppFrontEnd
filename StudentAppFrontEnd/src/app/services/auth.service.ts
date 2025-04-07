@@ -7,21 +7,25 @@ import { catchError, map, tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private API_ENDPOINT = 'http://localhost/StudentBackEnd/api/login.cfm';
+  private LOGIN_ENDPOINT = 'http://localhost/StudentAppBackEnd/api/login.cfm';
+  private REGISTER_ENDPOINT = 'http://localhost/StudentAppBackEnd/registerStudent.cfm';
+
   constructor(private http: HttpClient) {}
 
   login(email: string, password: string): Observable<any> {
-    const body = new URLSearchParams();
-    body.set('sEmail', email);
-    body.set('sPassword', password);
+    const body = {
+      sEmail: email,
+      sPassword: password
+    };
 
     const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/json'
     });
 
-    return this.http.post(this.API_ENDPOINT, body.toString(), { headers }).pipe(
+    return this.http.post(this.LOGIN_ENDPOINT, body, { headers }).pipe(
       map((response: any) => {
         if (response.status === 'success') {
+          localStorage.setItem('token', response.token || 'true');
           return response;
         } else {
           throw new Error(response.message || 'Login failed');
@@ -37,24 +41,39 @@ export class AuthService {
 
   register(name: string, email: string, password: string): Observable<any> {
     const body = {
-      sFunction: 'registerStudent',
       sName: name,
       sEmail: email,
       sPassword: password
     };
-  
+
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-  
-    return this.http.post('http://localhost/StudentBackEnd/api/register.cfm', body, { headers }).pipe(
-      map((response: any) => response),
-      tap(res => console.log('[Register] response:', res)),
-      catchError((error: any) => {
+
+    return this.http.post(this.REGISTER_ENDPOINT, body, { headers }).pipe(
+      map((response: any) => {
+        console.log('Server Response:', response); // Log server response for debugging
+        if (response.status === 'success') {
+          return response;
+        } else {
+          throw new Error(response.message || 'Registration failed');
+        }
+      }),
+      catchError(error => {
         console.error('[Register] error:', error);
+        if (error.error) {
+          console.error('Error response body:', error.error); // Log the raw error response
+        }
         return throwError(() => error);
       })
     );
   }
-  
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+  }
 }
