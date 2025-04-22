@@ -1,79 +1,55 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators'; // ✅ You forgot catchError here!
+
+const httpOptions = {
+  headers: new HttpHeaders({
+    'Content-Type': 'application/json',
+  }),
+};
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  private LOGIN_ENDPOINT = 'http://localhost/StudentAppBackEnd/api/login.cfm';
-  private REGISTER_ENDPOINT = 'http://localhost/StudentAppBackEnd/registerStudent.cfm';
+  private apiUrl = 'http://localhost:80/StudentAppBackEnd/registerStudent.cfm';
 
-  constructor(private http: HttpClient) {}
+  constructor(private _http: HttpClient) {}
 
-  login(email: string, password: string): Observable<any> {
-    const body = {
-      sEmail: email,
-      sPassword: password
-    };
+  register(data: any): Observable<any> {
+    return this._http.post(this.apiUrl, data, httpOptions).pipe(
+      map((res: any) => {
+        console.log('🧪 Raw response from server:', res);
+        let response = res;
 
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
+        if (typeof res === 'string') {
+          try {
+            response = JSON.parse(res);
+            console.log('✅ Parsed JSON:', response);
+          } catch (e) {
+            console.error('❌ Failed to parse JSON:', e);
+            throw new Error('Invalid JSON response from server');
+          }
+        }
 
-    return this.http.post(this.LOGIN_ENDPOINT, body, { headers }).pipe(
-      map((response: any) => {
-        if (response.status === 'success') {
-          localStorage.setItem('token', response.token || 'true');
+        const status = response?.STATUS;
+        const normalized = status?.toString().trim().toLowerCase();
+
+        console.log('🧪 STATUS:', status);
+        console.log('🧪 Normalized STATUS:', normalized);
+
+        if (normalized === 'success') {
           return response;
         } else {
-          throw new Error(response.message || 'Login failed');
+          console.error('Registration failed on server:', response);
+          throw new Error('Registration failed: ' + response.MESSAGE);
         }
       }),
-      tap(res => console.log('[Login] response:', res)),
-      catchError(error => {
-        console.error('[Login] error:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  register(name: string, email: string, password: string): Observable<any> {
-    const body = {
-      sName: name,
-      sEmail: email,
-      sPassword: password
-    };
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.post(this.REGISTER_ENDPOINT, body, { headers }).pipe(
-      map((response: any) => {
-        console.log('Server Response:', response); // Log server response for debugging
-        if (response.status === 'success') {
-          return response;
-        } else {
-          throw new Error(response.message || 'Registration failed');
-        }
-      }),
-      catchError(error => {
+      catchError((error) => {
         console.error('[Register] error:', error);
-        if (error.error) {
-          console.error('Error response body:', error.error); // Log the raw error response
-        }
-        return throwError(() => error);
+        return throwError(() => error); // You were missing this
       })
     );
-  }
-
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
-  }
-
-  logout(): void {
-    localStorage.removeItem('token');
   }
 }

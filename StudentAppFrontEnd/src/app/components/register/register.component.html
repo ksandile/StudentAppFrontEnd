@@ -1,27 +1,32 @@
-<div class="register-container">
-  <h2>Register</h2>
-  <form (submit)="onRegister()" #form="ngForm">
-    <div>
-      <label for="name">Full Name</label>
-      <input type="text" id="name" [(ngModel)]="name" name="name" required #nameField="ngModel" />
-      <div *ngIf="nameField.invalid && nameField.touched" class="error-message">Name is required</div>
-    </div>
-    <div>
-      <label for="email">Email</label>
-      <input type="email" id="email" [(ngModel)]="email" name="email" required #emailField="ngModel" />
-      <div *ngIf="emailField.invalid && emailField.touched" class="error-message">Valid email is required</div>
-    </div>
-    <div>
-      <label for="password">Password</label>
-      <input type="password" id="password" [(ngModel)]="password" name="password" required #passwordField="ngModel" />
-      <div *ngIf="passwordField.invalid && passwordField.touched" class="error-message">Password is required</div>
-    </div>
-    <div>
-      <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" required #confirmPasswordField="ngModel" />
-      <div *ngIf="confirmPasswordField.invalid && confirmPasswordField.touched" class="error-message">Confirm Password is required</div>
-    </div>
-    <button type="submit" [disabled]="form.invalid">Register</button>
-    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-  </form>
-</div>
+<h2>Register</h2>
+
+<form (ngSubmit)="onRegister()" #registerForm="ngForm">
+  <label>Full Name:</label>
+  <input [(ngModel)]="sName" name="name" required />
+
+  <label>Email:</label>
+  <input [(ngModel)]="sEmail" name="email" required type="email" />
+
+  <label>Password:</label>
+  <input
+    type="password"
+    name="password"
+    [(ngModel)]="sPassword"
+    required
+    autocomplete="new-password"
+  />
+
+  <label>Confirm Password:</label>
+  <input
+    type="password"
+    name="confirmPassword"
+    [(ngModel)]="confirmPassword"
+    required
+    autocomplete="new-password"
+  />
+
+  <button type="submit">Register</button>
+</form>
+
+<div *ngIf="successMessage" style="color: green;">{{ successMessage }}</div>
+<div *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</div>

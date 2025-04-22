@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
+import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -8,45 +8,44 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  name: string = '';
-  email: string = '';
-  password: string = '';
-  confirmPassword: string = '';
-  errorMessage: string = '';
+  sName = '';
+  sEmail = '';
+  sPassword = '';
+  confirmPassword = '';
+  successMessage = '';
+  errorMessage = '';
 
   constructor(private authService: AuthService, private router: Router) {}
 
   onRegister() {
-    // Check if passwords match
-    if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Passwords do not match';
+    if (this.sPassword !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match!';
+      this.successMessage = '';
       return;
     }
 
-    // Call the AuthService register function
-    this.authService.register(this.name, this.email, this.password).subscribe(
-      (response: any) => {
-        // If the registration is successful
-        console.log('Registration successful:', response);
-        if (response && response.status === 'success') {
-          // Navigate to login after successful registration
-          this.router.navigate(['/login']);
+    const studentData = {
+      sName: this.sName,
+      sEmail: this.sEmail,
+      sPassword: this.sPassword
+    };
+
+    this.authService.register(studentData).subscribe({
+      next: (res) => {
+        if (res.STATUS === 'success') {
+          this.successMessage = res.MESSAGE;
+          this.errorMessage = '';
+          setTimeout(() => this.router.navigate(['/login']), 2000);
         } else {
-          // If there's an issue with the response, show a generic error
-          this.errorMessage = 'Registration failed. Try again later.';
+          this.errorMessage = res.MESSAGE;
+          this.successMessage = '';
         }
       },
-      (error: any) => {
-        // Handle errors from the HTTP request
-        console.error('Registration error:', error);
-        if (error.error && error.error.message) {
-          // Display specific error message from backend
-          this.errorMessage = error.error.message;
-        } else {
-          // If no specific error, show a general failure message
-          this.errorMessage = 'Registration failed. Try again later.';
-        }
+      error: (err) => {
+        console.error('[Register] error:', err);
+        this.successMessage = '';
+        this.errorMessage = err.MESSAGE || 'Registration failed.';
       }
-    );
+    });
   }
 }
