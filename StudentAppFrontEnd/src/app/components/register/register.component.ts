@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -7,27 +8,44 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  name: string = '';
-  email: string = '';
-  password: string = '';
-  confirmPassword: string = '';
-  errorMessage: string = '';
+  sName = '';
+  sEmail = '';
+  sPassword = '';
+  confirmPassword = '';
+  successMessage = '';
+  errorMessage = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onRegister() {
-    if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Passwords do not match';
+    if (this.sPassword !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match!';
+      this.successMessage = '';
       return;
     }
 
-    this.authService.register(this.name, this.email, this.password).subscribe(
-      (response) => {
-        // Handle successful registration (e.g., redirect to login)
+    const studentData = {
+      sName: this.sName,
+      sEmail: this.sEmail,
+      sPassword: this.sPassword
+    };
+
+    this.authService.register(studentData).subscribe({
+      next: (res) => {
+        if (res.STATUS === 'success') {
+          this.successMessage = res.MESSAGE;
+          this.errorMessage = '';
+          setTimeout(() => this.router.navigate(['/login']), 2000);
+        } else {
+          this.errorMessage = res.MESSAGE;
+          this.successMessage = '';
+        }
       },
-      (error) => {
-        this.errorMessage = 'Registration failed. Try again later.';
+      error: (err) => {
+        console.error('[Register] error:', err);
+        this.successMessage = '';
+        this.errorMessage = err.MESSAGE || 'Registration failed.';
       }
-    );
+    });
   }
 }
