@@ -20,36 +20,33 @@ export class AuthService {
   register(data: any): Observable<any> {
     return this._http.post(this.apiUrl, data, httpOptions).pipe(
       map((res: any) => {
-        console.log('🧪 Raw response from server:', res);
-        let response = res;
+        console.log('🧪 Raw response:', res);
 
         if (typeof res === 'string') {
           try {
-            response = JSON.parse(res);
-            console.log('✅ Parsed JSON:', response);
+            res = JSON.parse(res);
           } catch (e) {
-            console.error('❌ Failed to parse JSON:', e);
-            throw new Error('Invalid JSON response from server');
+            console.error('❌ JSON parsing failed:', e);
+            throw new Error('Invalid JSON format from server.');
           }
         }
 
-        const status = response?.STATUS;
-        const normalized = status?.toString().trim().toLowerCase();
+        const status = (res.STATUS || res.status || '').toLowerCase();
+        const message = res.MESSAGE || res.message || '';
 
-        console.log('🧪 STATUS:', status);
-        console.log('🧪 Normalized STATUS:', normalized);
-
-        if (normalized === 'success') {
-          return response;
+        if (status === 'success') {
+          console.log('✅ Registration successful');
+          return res;
         } else {
-          console.error('Registration failed on server:', response);
-          throw new Error('Registration failed: ' + response.MESSAGE);
+          console.error('❌ Registration failed:', message);
+          throw new Error(message || 'Registration failed');
         }
       }),
       catchError((error) => {
-        console.error('[Register] error:', error);
-        return throwError(() => error); // You were missing this
+        console.error('💥 Caught error in service:', error);
+        return throwError(() => error);
       })
     );
   }
+
 }
